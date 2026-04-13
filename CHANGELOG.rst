@@ -10,9 +10,94 @@ adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 `Unreleased`_
 -------------
-Bugfix:
+
+Changed
+~~~~~~~
+
+- Removed the deprecated ``absorption`` parameter from ``ShoeBox``,
+  ``Room.from_corners``, and ``Room.extrude``.
+- Modernized the build system to use ``pyproject.toml`` and ``CMake``.
+- External dependencies (``Eigen``, ``nanoflann``, ``pybind11``) are now
+  automatically managed via CMake's ``FetchContent``.
+- Switched to dynamic versioning using ``setuptools_scm``.
+- Relocated the test suite from the source package to a top-level ``tests/`` directory.
+- Update the continuous integration to use cibuildwheel to handle all platforms
+  including manylinux.
+- The location of the SOFA files can be specified by the
+  ``PYROOMACOUSTICS_DATA_PATH`` environment variable.
+
+
+`0.10.0`_ - 2026-04-01
+----------------------
+
+`Ray Tracing Directivity`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This new release introduces source and receiver directivities for the ray
+tracing simulation engine.
+
+- Support for source directivities in non-shoebox rooms using the images source
+  model.
+
+- New ``pyroomacoustics.random`` module that provides some primitives for
+  sampling at random from arbitrary distributions on the sphere. This is used
+  for source directivities in the ray tracing simulator.
+
+- New octave filter bank with energy conservation and perfect reconstruction
+  described in Antoni, "Orthogonal-like fractional-octave-band filters," 2009.
+  The filter bank is implemented in
+  ``pyroomacoustics.acoustics.AntoniOctaveFilterBank``.
+
+- A method ``sample_rays`` is added to the ``Directivity`` objects to provide a
+  unified interface to sample rays of sources used for ray tracing.
+
+- The class ``directivities.SphericalHistogram`` allows to collect and display
+  histograms on the sphere which can be useful to visualize and test
+  directivities.
+
+Added
+~~~~~
+
+- A new ``random`` sub-module that contains a Numpy random number generator to use
+  package wide and some methods to set the seeds for this generator and that of
+  the libroom module.
+
+- New methods to sample from spherical distributions either analytically, or by
+  rejection sampling are provided in ``random``.
+
+Changed
+~~~~~~~
+
+- Bumped the numpy requirement to v1.17.0 to use the ``numpy.random.Generator`` objects.
+
+- Adds random "bending" of the rays to account for scattering in the ray tracing.
+
+- Refactor the way the RIR is weighted with the histogram in simulation/rt.py.
+
+- Improves ``pra.experimental.measure_rt60``: Compute the T60 using a fit. Default is
+  log-domain. Adds option to fit in linear domain.
+
+- Add Directivity pattern for real spherical harmonics. 
+
+- Flip the settings to use ``octave_bands_keep_dc=True`` by default. There should be
+  minimal change due to the introduction of the high-pass filter in `0.9.0`_.
+
+Bugfix
 ~~~~~~
-in `doa.py`, the `ax.xaxis.grid` and `ax.yaxis.grid` parameters were changed from `b` to `visible`.
+
+- Fixes the lowest octave band filter that was malformed when using
+  ``octave_bands_keep_dc=True``.
+
+- Fixes the computation of the octave band widths that were not correct for the lowest
+  and high bands.
+
+- In ``doa.py``, the ``ax.xaxis.grid`` and ``ax.yaxis.grid`` parameters were changed from ``b`` to ``visible``.
+
+- Fixes ``MicrophoneArray.append(MicrophoneArray) AttributeError: 'MicrophoneArray'
+  object has no attribute 'shape'.``
+
+- Fixes issue #421: When generating a highpass filtered room impulse response make
+  sure that the output is a memory contiguous NumPy array.
 
 
 `0.9.0`_ - 2025-12-07
@@ -475,7 +560,7 @@ Changed
 - Changed while loop to iterate up to `room_isinside_max_iter` in `pyroomacoustics.room.Room.isinside`
 - Changed initialization of FastMNMF to accelerate convergence
 - Fixed bug in doa/tops (float -> integer division)
-- Added vectorised functions in MUSIC 
+- Added vectorised functions in MUSIC
 - Use the vectorised functions in _process of MUSIC
 
 
@@ -751,7 +836,8 @@ Changed
    ``pyroomacoustics.datasets.timit``
 
 
-.. _Unreleased: https://github.com/LCAV/pyroomacoustics/compare/v0.9.0...master
+.. _Unreleased: https://github.com/LCAV/pyroomacoustics/compare/v0.10.0...master
+.. _0.10.0: https://github.com/LCAV/pyroomacoustics/compare/v0.9.0...v0.10.0
 .. _0.9.0: https://github.com/LCAV/pyroomacoustics/compare/v0.8.6...v0.9.0
 .. _0.8.6: https://github.com/LCAV/pyroomacoustics/compare/v0.8.5...v0.8.6
 .. _0.8.5: https://github.com/LCAV/pyroomacoustics/compare/v0.8.4...v0.8.5

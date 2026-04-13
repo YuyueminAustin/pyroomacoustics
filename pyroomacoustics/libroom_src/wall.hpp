@@ -56,6 +56,8 @@ class Wall
     // Wall properties container
     Eigen::ArrayXf absorption;  // the wall absorption coefficient for every freq. band
     Eigen::ArrayXf scatter;  // the wall scattering coefficient for every freq. band
+    float average_scatter;  // the average scattering coefficient accross all subbands
+    bool does_scatter = false;  // flag that indicates that the wall has non-zero scattering
     std::string name;
     Eigen::ArrayXf transmission;  // computed from absorption as sqrt(1 - a)
     Eigen::ArrayXf energy_reflection;  // computed from absorption as (1 - a)
@@ -84,9 +86,9 @@ class Wall
 
     // Copy constructor
     Wall(const Wall<D> &w) :
-      absorption(w.absorption), scatter(w.scatter), name(w.name),
-      transmission(w.transmission), energy_reflection(w.energy_reflection),
-      normal(w.normal), corners(w.corners),
+      absorption(w.absorption), scatter(w.scatter), average_scatter(w.average_scatter),
+      does_scatter(w.does_scatter), name(w.name), transmission(w.transmission),
+      energy_reflection(w.energy_reflection), normal(w.normal), corners(w.corners),
       origin(w.origin), basis(w.basis), flat_corners(w.flat_corners)
     {}
 
@@ -94,6 +96,20 @@ class Wall
     const Eigen::ArrayXf &get_transmission() const { return transmission; }
     const Eigen::ArrayXf &get_energy_reflection() const { return energy_reflection; }
     size_t get_n_bands() const { return transmission.size(); }
+
+    void broadcast_bands_to(int new_n_bands) {
+        int n_bands = get_n_bands();
+        if (n_bands == 1 || new_n_bands == 1) {
+            // Simple broadcasting.
+            absorption = Eigen::ArrayXf::Ones(new_n_bands) * absorption.coeff(0);
+            scatter = Eigen::ArrayXf::Ones(new_n_bands) * scatter.coeff(0);
+            transmission = Eigen::ArrayXf::Ones(new_n_bands) * transmission.coeff(0);
+            energy_reflection = Eigen::ArrayXf::Ones(new_n_bands) * energy_reflection.coeff(0);
+         } else {
+             throw std::runtime_error("Incompatible bands broadcasting size.");
+         }
+    }
+
     float area() const;  // compute the area of the wall
     int intersection(  // compute the intersection of line segment (p1 <-> p2) with wall
         const Vectorf<D> &p1,
@@ -123,6 +139,8 @@ class Wall
     float cosine_angle(   // cosine angle with respect to surface normal
         const Vectorf<D> &p
         ) const;
+
+    Vectorf<D> sample_lambertian_reflection() const;
 }; 
 
 #include "wall.cpp"

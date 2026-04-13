@@ -1738,7 +1738,7 @@ def pt_src_recon_multiband(
     G_lst=None,
     GtG_lst=None,
     GtG_inv_lst=None,
-    **kwargs
+    **kwargs,
 ):
     """
     reconstruct point sources on the circle from the visibility measurements
@@ -1788,7 +1788,7 @@ def pt_src_recon_multiband(
     if len(a.shape) == 2:
         assert a.shape[1] == num_bands
 
-    a_ri = np.row_stack((a.real, a.imag))
+    a_ri = np.vstack((a.real, a.imag))
 
     if update_G:
         if "G_iter" in kwargs:
@@ -1920,7 +1920,7 @@ def pt_src_recon(
     update_G=False,
     verbose=False,
     signal_type="visibility",
-    **kwargs
+    **kwargs,
 ):
     """
     reconstruct point sources on the circle from the visibility measurements
@@ -2026,7 +2026,7 @@ def pt_src_recon_rotate(
     num_rotation=1,
     verbose=False,
     signal_type="visibility",
-    **kwargs
+    **kwargs,
 ):
     """
     reconstruct point sources on the circle from the visibility measurements.
@@ -2097,7 +2097,7 @@ def pt_src_recon_rotate(
         # rotate microphone steering vector
         # (due to change of coordinate w.r.t. the random rotation)
         p_mic_xy_rotated = np.dot(
-            rotate_mtx, np.row_stack((p_mic_x.flatten("F"), p_mic_y.flatten("F")))
+            rotate_mtx, np.vstack((p_mic_x.flatten("F"), p_mic_y.flatten("F")))
         )
         p_mic_x_rotated = np.reshape(p_mic_xy_rotated[0, :], p_mic_x.shape, order="F")
         p_mic_y_rotated = np.reshape(p_mic_xy_rotated[1, :], p_mic_y.shape, order="F")
@@ -2137,7 +2137,7 @@ def pt_src_recon_rotate(
                 xk_recon_rotated, yk_recon_rotated = polar2cart(1, phik_recon_rotated)
                 xy_rotate_back = linalg.solve(
                     rotate_mtx,
-                    np.row_stack(
+                    np.vstack(
                         (xk_recon_rotated.flatten("F"), yk_recon_rotated.flatten("F"))
                     ),
                 )

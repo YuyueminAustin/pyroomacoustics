@@ -92,6 +92,7 @@ References
     transform,” IEEE Transactions on Acoustics, Speech, and Signal Processing, vol.
     32, no. 2, pp. 236–243, 1984.
 """
+
 # This is needed to check for string types
 # in a way compatible between python 2 and 3
 try:
@@ -158,7 +159,7 @@ def griffin_lim(
         hop=hop,
         analysis_window=analysis_window,
         synthesis_window=synthesis_window,
-        **stft_kwargs
+        **stft_kwargs,
     )
 
     # Initialize the signal

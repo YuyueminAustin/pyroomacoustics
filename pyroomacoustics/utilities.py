@@ -26,6 +26,7 @@ from __future__ import division
 import fractions
 import functools
 import itertools
+import math
 import warnings
 
 import numpy as np
@@ -33,6 +34,7 @@ from scipy import signal
 from scipy.io import wavfile
 from scipy.signal import iirfilter, sosfiltfilt, sosfreqz
 
+from . import random
 from .doa import cart2spher
 from .parameters import constants, eps
 from .sync import correlate
@@ -117,12 +119,13 @@ def create_noisy_signal(signal_fp, snr, noise_fp=None, offset=None):
             )
         noise = noise[:output_len]
     else:
+        rng = random.get_rng()
         if len(clean_signal.shape) > 1:  # multichannel
-            noise = np.random.randn(output_len, clean_signal.shape[1]).astype(
+            noise = rng.normal(size=(output_len, clean_signal.shape[1])).astype(
                 np.float32
             )
         else:
-            noise = np.random.randn(output_len).astype(np.float32)
+            noise = rng.normal(size=output_len).astype(np.float32)
         noise = normalize(noise)
 
     # weight noise according to desired SNR
@@ -933,9 +936,16 @@ def resample(data, old_fs, new_fs, backend=None, *args, **kwargs):
     if backend == "soxr":
         resampled_data = soxr.resample(data, old_fs, new_fs, *args, **kwargs)
     elif backend == "samplerate":
-        resampled_data = samplerate.resample(
-            data, new_fs / old_fs, "sinc_best", *args, **kwargs
-        )
+        # Split into arrays of 128 channels to accomodate a limitation of samplerate.
+        block = 128
+        data_inputs = [
+            data[:, i : i + block].copy() for i in range(0, data.shape[1], block)
+        ]
+        data_outputs = [
+            samplerate.resample(d, new_fs / old_fs, "sinc_best", *args, **kwargs)
+            for d in data_inputs
+        ]
+        resampled_data = np.concatenate(data_outputs, axis=1)
     else:
         # first, simplify the fraction
         rate_frac = fractions.Fraction(int(new_fs), int(old_fs))
@@ -945,7 +955,7 @@ def resample(data, old_fs, new_fs, backend=None, *args, **kwargs):
             down=rate_frac.denominator,
             axis=0,
             *args,
-            **kwargs
+            **kwargs,
         )
 
     # restore the original shape of the data
