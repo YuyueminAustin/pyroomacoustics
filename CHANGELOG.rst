@@ -11,6 +11,21 @@ adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 `Unreleased`_
 -------------
 
+Fixed
+~~~~~
+
+- `spiral_2D_array` now correctly uses the ``center`` parameter. Previously, it always returned the array at the origin. (`#413 <https://github.com/LCAV/pyroomacoustics/issues/413>`_).
+
+
+`0.10.1`_ - 2026-05-01
+----------------------
+
+Added
+~~~~~~~
+
+- Added a boolean flag ``plot_walls`` to toggle wall rendering in ``Room.plot``.
+- Set the ``plot_walls`` to ``False`` for ``AnechoicRoom`` by default.
+
 Changed
 ~~~~~~~
 
@@ -25,6 +40,11 @@ Changed
   including manylinux.
 - The location of the SOFA files can be specified by the
   ``PYROOMACOUSTICS_DATA_PATH`` environment variable.
+
+Bugfix
+~~~~~~
+
+- Fixes NaNs that may appear in RT histogram in some cases (issue #433). Thanks @jguice.
 
 
 `0.10.0`_ - 2026-04-01
@@ -836,7 +856,8 @@ Changed
    ``pyroomacoustics.datasets.timit``
 
 
-.. _Unreleased: https://github.com/LCAV/pyroomacoustics/compare/v0.10.0...master
+.. _Unreleased: https://github.com/LCAV/pyroomacoustics/compare/v0.10.1...master
+.. _0.10.1: https://github.com/LCAV/pyroomacoustics/compare/v0.10.0...v0.10.1
 .. _0.10.0: https://github.com/LCAV/pyroomacoustics/compare/v0.9.0...v0.10.0
 .. _0.9.0: https://github.com/LCAV/pyroomacoustics/compare/v0.8.6...v0.9.0
 .. _0.8.6: https://github.com/LCAV/pyroomacoustics/compare/v0.8.5...v0.8.6
